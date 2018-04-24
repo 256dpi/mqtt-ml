@@ -3,7 +3,7 @@ import 'babel-polyfill';
 import mqtt from 'mqtt';
 import $ from 'jquery';
 
-import AI from './ai';
+import AI from './discrete_ai';
 
 let ai = new AI();
 
