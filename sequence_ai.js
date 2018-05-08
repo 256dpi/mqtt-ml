@@ -5,7 +5,6 @@ export default class AI {
       this.learning = false;
       this.counter = 0;
       this.gestures = [];
-      this.cache = [];
     }
 
     start() {
@@ -52,9 +51,35 @@ export default class AI {
     async train() {
       // create a simple model
       this.model = tf.sequential();
-      this.model.add(tf.layers.dense({units: 50, inputShape: [10, 3]}));
+      this.model.add(tf.layers.conv1d({
+        inputShape: [10, 3],
+        kernelSize: 3,
+        filters: 8,
+        strides: 1,
+        activation: 'relu',
+        kernelInitializer: 'VarianceScaling'
+      }));
+      this.model.add(tf.layers.maxPooling1d({
+        poolSize: 2,
+        strides: 2
+      }));
+      this.model.add(tf.layers.conv1d({
+        kernelSize: 3,
+        filters: 16,
+        strides: 1,
+        activation: 'relu',
+        kernelInitializer: 'VarianceScaling'
+      }));
+      this.model.add(tf.layers.maxPooling1d({
+        poolSize: 2,
+        strides: 2
+      }));
       this.model.add(tf.layers.flatten());
-      this.model.add(tf.layers.dense({units: this.counter}));
+      this.model.add(tf.layers.dense({
+        units: this.counter,
+        kernelInitializer: 'VarianceScaling',
+        activation: 'softmax'
+      }));
 
       // prepare the model for training: Specify the loss and the optimizer
       this.model.compile({
@@ -89,18 +114,8 @@ export default class AI {
     }
 
     predict(data) {
-      // add element
-      this.cache.push(data);
-
-      // check cache
-      if(this.cache.length <= 10) {
-        return;
-      }
-
-      // remove old point
-      this.cache.shift();
-
+      console.log(data);
       // use the model to do inference on a data point the model hasn't seen
-      return this.model.predict(tf.tensor3d([this.cache], [1, 10, 3])).dataSync();
+      return this.model.predict(tf.tensor3d([data], [1, 10, 3])).dataSync();
     }
 }
