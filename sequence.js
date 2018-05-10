@@ -9,27 +9,51 @@ let ai = new AI();
 
 let client = mqtt.connect('ws://0.0.0.0:1884');
 
+let recording = false;
+let cache = [];
+let gestures = [[]];
+
 let trained = false;
 let samples = [];
 
 client.on('connect', function () {
   console.log('client connected');
 
-  client.subscribe('+/acc');
+  client.subscribe('+/gyr');
 });
 
-client.on('message', function (topic, message) {
-  // parse incoming data
-  let data = message.toString().split(',').map((v) => parseFloat(v) );
+function record(data) {
+  // cache data
+  cache.push(data);
+
+  console.log("cached data");
+
+  // return if data is missing
+  if(cache.length < 10) {
+    return;
+  }
+
+  // add sample
+  gestures[gestures.length-1].push(cache);
+
+  // reset cache
+  cache = [];
+
+  // reset flag
+  recording = false;
+
+  console.log("added sample");
+}
+
+function predict(data) {
+  // add data to samples
+  samples.push(data);
 
   // learn data point if not yet trained
   if(!trained) {
     ai.learn(data);
     return;
   }
-
-  // otherwise add sample
-  samples.push(data);
 
   // wait for enough samples
   if (samples.length < 10) {
@@ -47,23 +71,34 @@ client.on('message', function (topic, message) {
   // set label
   let s = Array.from(d).map((v, i) => `${i}: ${v}`);
   $('#out').html(s.join("<br>"));
+}
+
+client.on('message', function (topic, message) {
+  // parse incoming data
+  let data = message.toString().split(',').map((v) => parseFloat(v) / 300 );
+
+  // switch state
+  if (recording) {
+    record(data);
+  } else if(trained) {
+    predict(data);
+  }
 });
 
-$('#start').click(() => {
-  ai.start();
+$('#record').click(() => {
+  recording = true;
 });
 
-$('#pause').click(() => {
-  ai.pause();
-});
+$('#add').click(() => {
+  // add array
+  gestures.push([]);
 
-$('#finish').click(() => {
-  ai.finish();
+  console.log("added gesture");
 });
 
 $('#train').click(() => {
-  ai.train().then((h) => {
-    console.log(h);
+  ai.train(gestures).then((h) => {
+    console.log(h.history.loss);
     trained = true;
   });
 });
