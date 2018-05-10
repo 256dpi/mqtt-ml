@@ -66,7 +66,7 @@ function predict(data) {
   }
 
   // otherwise predict gesture from collected samples
-  let d = ai.predict(samples);
+  let d = ai.classify(samples);
 
   // set label
   let s = Array.from(d).map((v, i) => `${i}: ${v}`);
