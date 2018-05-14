@@ -46,22 +46,18 @@ client.on('message', function (topic, message) {
   $('#out').html(d.map((v, i) => `${i}: ${v}`).join("<br>"));
 });
 
-$('#start').click(() => {
-  // return if already in learning mode
+$('#toggle').click(() => {
+  // disable learning if learning
   if(learning) {
+    learning = false;
     return;
   }
 
-  // set flag
+  // otherwise enable learning
   learning = true;
 
   // add empty array for next gesture
   gestures.push([]);
-});
-
-$('#stop').click(() => {
-  // reset flag
-  learning = false;
 });
 
 $('#train').click(() => {
