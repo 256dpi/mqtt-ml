@@ -3,7 +3,7 @@
     <title>MQTT TF Test</title>
 
     <style>
-      #out {
+      body, button {
         font-size: 32px;
       }
     </style>
@@ -13,11 +13,26 @@
 
     <hr/>
 
+    <span>Incoming Data:</span>
+    <span id="data"></span>
+
+    <hr/>
+
     <button id="record">Record Sample</button>
     <button id="add">Add Gesture</button>
     <button id="train">Train TF Model</button>
 
     <p>Set sensor to 100ms update interval and perform the gesture roughly every second for a second while learning.</p>
+
+    <hr/>
+
+    <span>Info:</span>
+    <span id="info"></span>
+
+    <hr/>
+
+    <span>Loss:</span>
+    <span id="loss"></span>
 
     <hr/>
 

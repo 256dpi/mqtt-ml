@@ -26,10 +26,10 @@ function record(data) {
   // cache data
   cache.push(data);
 
-  console.log("cached data");
-
   // return if data is missing
   if(cache.length < 10) {
+    // update info
+    $('#info').text(cache.length);
     return;
   }
 
@@ -42,7 +42,8 @@ function record(data) {
   // reset flag
   recording = false;
 
-  console.log("added sample");
+  // update info
+  $('#info').text(gestures.map((v, i) => `${i}: ${v.length}`).join(', '));
 }
 
 function predict(data) {
@@ -74,6 +75,9 @@ function predict(data) {
 }
 
 client.on('message', function (topic, message) {
+  // show message
+  $('#data').text(message);
+
   // parse incoming data
   let data = message.toString().split(',').map((v) => parseFloat(v) / 300 );
 
@@ -90,15 +94,13 @@ $('#record').click(() => {
 });
 
 $('#add').click(() => {
-  // add array
+  // add gesture
   gestures.push([]);
-
-  console.log("added gesture");
 });
 
 $('#train').click(() => {
   ai.train(gestures).then((h) => {
-    console.log(h.history.loss);
+    $('#loss').text(h.history.loss[h.history.loss.length-1]);
     trained = true;
   });
 });
