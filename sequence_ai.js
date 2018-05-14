@@ -1,12 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 
 export default class AI {
-  /**
-   * Train the model with collected data.
-   *
-   * @param gestures
-   * @returns {Promise<tf.History>}
-   */
   async train(gestures) {
     // create a simple model
     this.model = tf.sequential();
@@ -72,12 +66,6 @@ export default class AI {
     return this.model.fit(xs, ys, {epochs: 500});
   }
 
-  /**
-   * Classify a gesture.
-   *
-   * @param data
-   * @returns {*}
-   */
   classify(data) {
     // use the model to do inference on a data point the model hasn't seen
     return this.model.predict(tf.tensor3d([data], [1, 10, 3])).dataSync();
