@@ -7,8 +7,6 @@ import AI from './sequence_ai';
 
 let ai = new AI();
 
-let client = mqtt.connect('ws://0.0.0.0:1884');
-
 let recording = false;
 let cache = [];
 let gestures = [[]];
@@ -16,10 +14,29 @@ let gestures = [[]];
 let trained = false;
 let samples = [];
 
-client.on('connect', function () {
-  console.log('client connected');
+$('#connect').click(() => {
+  let client = mqtt.connect($('#broker').val());
 
-  client.subscribe('+/gyr');
+  client.on('connect', () => {
+    console.log('client connected');
+
+    client.subscribe('+/gyr');
+  });
+
+  client.on('message', function (topic, message) {
+    // show message
+    $('#data').text(message);
+
+    // parse incoming data
+    let data = message.toString().split(',').map((v) => parseFloat(v) / 300 );
+
+    // switch state
+    if (recording) {
+      record(data);
+    } else if(trained) {
+      predict(data);
+    }
+  });
 });
 
 function record(data) {
@@ -73,21 +90,6 @@ function predict(data) {
   let s = Array.from(d).map((v, i) => `${i}: ${v}`);
   $('#out').html(s.join("<br>"));
 }
-
-client.on('message', function (topic, message) {
-  // show message
-  $('#data').text(message);
-
-  // parse incoming data
-  let data = message.toString().split(',').map((v) => parseFloat(v) / 300 );
-
-  // switch state
-  if (recording) {
-    record(data);
-  } else if(trained) {
-    predict(data);
-  }
-});
 
 $('#record').click(() => {
   recording = true;

@@ -7,44 +7,52 @@ import AI from './discrete_ai';
 
 let ai = new AI();
 
-let client = mqtt.connect('ws://0.0.0.0:1884');
-
 let gestures = [];
 let learning = false;
 let trained = false;
 
-client.on('connect', function () {
-  console.log('client connected');
+$('#connect').click(() => {
+  let client = mqtt.connect($('#broker').val());
 
-  client.subscribe('+/acc');
+  client.on('connect', () => {
+    console.log('client connected');
+
+    client.subscribe('+/acc');
+  });
+
+  client.on('message', function (topic, message) {
+    // show message
+    $('#data').text(message);
+
+    // parse incoming data
+    let data = message.toString().split(',').map((v) => parseFloat(v) );
+
+    // switch state
+    if (!trained) {
+      learn(data);
+    } else if(trained) {
+      predict(data);
+    }
+  });
 });
 
-client.on('message', function (topic, message) {
-  // show message
-  $('#data').text(message);
+function learn(data) {
+  // add data point to last gesture in learning mode
+  if(learning) {
+    gestures[gestures.length-1].push(data);
 
-  // parse incoming data
-  let data = message.toString().split(',').map((v) => parseFloat(v) );
-
-  // learn data point if not yet trained
-  if(!trained) {
-    // add data point to last gesture in learning mode
-    if(learning) {
-      gestures[gestures.length-1].push(data);
-
-      // update info
-      $('#info').text(gestures.map((v, i) => `${i}: ${v.length}`).join(', '));
-    }
-
-    return;
+    // update info
+    $('#info').text(gestures.map((v, i) => `${i}: ${v.length}`).join(', '));
   }
+}
 
-  // otherwise predict gesture from data point
+function predict(data) {
+// otherwise predict gesture from data point
   let d = Array.from(ai.predict(data));
 
   // update output
   $('#out').html(d.map((v, i) => `${i}: ${v}`).join("<br>"));
-});
+}
 
 $('#toggle').click(() => {
   // disable learning if learning
